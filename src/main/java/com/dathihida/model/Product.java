@@ -12,7 +12,6 @@ import java.lang.String;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -32,6 +31,7 @@ public class Product {
 
     private String color;
 
+    @ElementCollection
     private List<String> images = new ArrayList<>();
 
     private  int numRating;
