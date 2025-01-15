@@ -7,10 +7,10 @@ import com.dathihida.response.ApiResponse;
 
 @RestController()
 public class HomeController {
-//    @GetMapping("/home")
-//    public ApiResponse HomeControllerHandler() {
-//        ApiResponse apiResponse = new ApiResponse();
-//        apiResponse.setMessage("Welcome to e-commerce multi vendor system");
-//        return apiResponse;
-//    }
+    @GetMapping("/home")
+    public ApiResponse HomeControllerHandler() {
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setMessage("Welcome to e-commerce multi vendor system");
+        return apiResponse;
+    }
 }
