@@ -4,16 +4,21 @@ import com.dathihida.config.JwtProvider;
 import com.dathihida.domain.USER_ROLE;
 import com.dathihida.model.Cart;
 import com.dathihida.model.User;
+import com.dathihida.model.VerificationCode;
 import com.dathihida.repository.CartRepository;
 import com.dathihida.repository.UserRepository;
+import com.dathihida.repository.VerificationCodeRepository;
 import com.dathihida.request.SignupRequest;
 import com.dathihida.service.AuthService;
+import com.dathihida.service.EmailService;
+import com.dathihida.utils.OtpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,11 +31,46 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
+    private final VerificationCodeRepository verificationCodeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final EmailService emailService;
 
     @Override
-    public String createUser(SignupRequest request) {
+    public void sendLoginOpt(String email) throws Exception {
+        String SIGNING_PREFIX = "signin_";
+
+        if(email.startsWith(SIGNING_PREFIX)) {
+            email = email.substring(SIGNING_PREFIX.length());
+
+            User user = userRepository.findByEmail(email);
+            if(user == null) {
+                throw new Exception("user not exist with provided email");
+            }
+        }
+
+        VerificationCode isExist = verificationCodeRepository.findByEmail(email);
+        if(isExist != null) {
+            verificationCodeRepository.delete(isExist);
+        }
+        String otp = OtpUtil.generateOtp();
+        VerificationCode verificationCode = new VerificationCode();
+        verificationCode.setEmail(email);
+        verificationCode.setOpt(otp);
+        verificationCodeRepository.save(verificationCode);
+
+        String subject = "tiendat login/signup otp";
+        String text = "your login/ signup otp is - "+ otp;
+        emailService.sendVerificationOtpEmail(email, otp, subject, text);
+    }
+
+    @Override
+    public String createUser(SignupRequest request) throws Exception {
+        VerificationCode verificationCode = verificationCodeRepository.findByEmail(request.getEmail());
+        if (verificationCode == null || !verificationCode.getOpt().equals(request.getOpt())) {
+            throw new Exception("wrong opt ...");
+        }
+
         User user = userRepository.findByEmail(request.getEmail());
         if (user == null) {
             User createdUser = new User();

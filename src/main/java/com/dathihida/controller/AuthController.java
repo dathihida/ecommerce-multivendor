@@ -2,8 +2,10 @@ package com.dathihida.controller;
 
 import com.dathihida.domain.USER_ROLE;
 import com.dathihida.model.User;
+import com.dathihida.model.VerificationCode;
 import com.dathihida.repository.UserRepository;
 import com.dathihida.request.SignupRequest;
+import com.dathihida.response.ApiResponse;
 import com.dathihida.response.AuthResponse;
 import com.dathihida.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +24,22 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> createUser(@RequestBody SignupRequest request) {
+    public ResponseEntity<AuthResponse> createUser(@RequestBody SignupRequest request) throws Exception {
         String jwt = authService.createUser(request);
         AuthResponse response = new AuthResponse();
         response.setJwt(jwt);
         response.setMessage("register success");
         response.setRole(USER_ROLE.ROLE_CUSTOMER);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/sent/login-signup-otp")
+    public ResponseEntity<ApiResponse> sentOtpHandler(@RequestBody VerificationCode request) throws Exception {
+        authService.sendLoginOpt(request.getEmail());
+
+        ApiResponse response = new ApiResponse();
+        response.setMessage("otp sent successfully");
         return ResponseEntity.ok(response);
     }
 }
