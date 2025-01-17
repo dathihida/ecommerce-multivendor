@@ -4,6 +4,7 @@ import com.dathihida.domain.USER_ROLE;
 import com.dathihida.model.User;
 import com.dathihida.model.VerificationCode;
 import com.dathihida.repository.UserRepository;
+import com.dathihida.request.LoginRequest;
 import com.dathihida.request.SignupRequest;
 import com.dathihida.response.ApiResponse;
 import com.dathihida.response.AuthResponse;
@@ -41,5 +42,11 @@ public class AuthController {
         ApiResponse response = new ApiResponse();
         response.setMessage("otp sent successfully");
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/signing")
+    public ResponseEntity<AuthResponse> loginHandler(@RequestBody LoginRequest request) throws Exception {
+        AuthResponse authResponse = authService.signIn(request);
+        return ResponseEntity.ok(authResponse);
     }
 }
