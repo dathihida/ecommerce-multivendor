@@ -4,6 +4,7 @@ import com.dathihida.domain.USER_ROLE;
 import com.dathihida.model.User;
 import com.dathihida.model.VerificationCode;
 import com.dathihida.repository.UserRepository;
+import com.dathihida.request.LoginOtpRequest;
 import com.dathihida.request.LoginRequest;
 import com.dathihida.request.SignupRequest;
 import com.dathihida.response.ApiResponse;
@@ -36,8 +37,9 @@ public class AuthController {
     }
 
     @PostMapping("/sent/login-signup-otp")
-    public ResponseEntity<ApiResponse> sentOtpHandler(@RequestBody VerificationCode request) throws Exception {
-        authService.sendLoginOpt(request.getEmail());
+    public ResponseEntity<ApiResponse> sentOtpHandler(@RequestBody LoginOtpRequest request) throws Exception {
+
+        authService.sendLoginOpt(request.getEmail(), request.getRole());
 
         ApiResponse response = new ApiResponse();
         response.setMessage("otp sent successfully");
@@ -46,6 +48,10 @@ public class AuthController {
 
     @PostMapping("/signing")
     public ResponseEntity<AuthResponse> loginHandler(@RequestBody LoginRequest request) throws Exception {
+        String otp = request.getOtp();
+        String email = request.getEmail();
+
+        request.setEmail("customer_" + email);
         AuthResponse authResponse = authService.signIn(request);
         return ResponseEntity.ok(authResponse);
     }
