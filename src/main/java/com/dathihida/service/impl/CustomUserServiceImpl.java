@@ -23,6 +23,7 @@ public class CustomUserServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
     private static final String SELLER_PREFIX = "seller_";
+    private static final String CUSTOMER_PREFIX = "customer_";
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -33,8 +34,10 @@ public class CustomUserServiceImpl implements UserDetailsService {
             if(seller != null) {
                 return buildUserDetails(seller.getEmail(), seller.getPassword(), seller.getRole());
             }
-        }else {
-            User user = userRepository.findByEmail(username);
+
+        }else if(username.startsWith(CUSTOMER_PREFIX)){
+            String actualUsername = username.substring(CUSTOMER_PREFIX.length());
+            User user = userRepository.findByEmail(actualUsername);
             if(user != null){
                 return buildUserDetails(user.getEmail(), user.getPassword(), user.getRole());
             }

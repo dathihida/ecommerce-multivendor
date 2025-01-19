@@ -1,5 +1,6 @@
 package com.dathihida.model;
 
+import com.dathihida.domain.AccountStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,4 +31,6 @@ public class Address {
     private String pinCode;
 
     private String mobile;
+
+    private AccountStatus accountStatus;
 }

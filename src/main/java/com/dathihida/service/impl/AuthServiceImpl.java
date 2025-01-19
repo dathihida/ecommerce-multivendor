@@ -3,9 +3,11 @@ package com.dathihida.service.impl;
 import com.dathihida.config.JwtProvider;
 import com.dathihida.domain.USER_ROLE;
 import com.dathihida.model.Cart;
+import com.dathihida.model.Seller;
 import com.dathihida.model.User;
 import com.dathihida.model.VerificationCode;
 import com.dathihida.repository.CartRepository;
+import com.dathihida.repository.SellerRepository;
 import com.dathihida.repository.UserRepository;
 import com.dathihida.repository.VerificationCodeRepository;
 import com.dathihida.request.LoginRequest;
@@ -41,18 +43,28 @@ public class AuthServiceImpl implements AuthService {
     private final JwtProvider jwtProvider;
     private final EmailService emailService;
     private final CustomUserServiceImpl customUserServiceImpl;
+    private final SellerRepository sellerRepository;
 
     @Override
-    public void sendLoginOpt(String email) throws Exception {
-        String SIGNING_PREFIX = "signin_";
+    public void sendLoginOpt(String email, USER_ROLE role) throws Exception {
+        String SIGNING_PREFIX = "signing_";
 
         if(email.startsWith(SIGNING_PREFIX)) {
             email = email.substring(SIGNING_PREFIX.length());
 
-            User user = userRepository.findByEmail(email);
-            if(user == null) {
-                throw new Exception("user not exist with provided email");
+            if (role.equals(USER_ROLE.ROLE_CUSTOMER)){
+                User user = userRepository.findByEmail(email);
+                if(user == null) {
+                    throw new Exception("user not exist with provided email");
+                }
+            }else if (role.equals(USER_ROLE.ROLE_SELLER)){
+                Seller seller = sellerRepository.findByEmail(email);
+                if(seller == null) {
+                    throw new Exception("seller not exist with provided email");
+                }
             }
+
+
         }
 
         VerificationCode isExist = verificationCodeRepository.findByEmail(email);
@@ -62,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
         String otp = OtpUtil.generateOtp();
         VerificationCode verificationCode = new VerificationCode();
         verificationCode.setEmail(email);
-        verificationCode.setOpt(otp);
+        verificationCode.setOtp(otp);
         verificationCodeRepository.save(verificationCode);
 
         String subject = "tiendat login/signup otp";
@@ -73,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String createUser(SignupRequest request) throws Exception {
         VerificationCode verificationCode = verificationCodeRepository.findByEmail(request.getEmail());
-        if (verificationCode == null || !verificationCode.getOpt().equals(request.getOpt())) {
+        if (verificationCode == null || !verificationCode.getOtp().equals(request.getOpt())) {
             throw new Exception("wrong opt ...");
         }
 
@@ -103,10 +115,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse signIn(LoginRequest request) {
-        String username = request.getEmail();
-        VerificationCode verificationCode = verificationCodeRepository.findByEmail(request.getEmail());
+        String email = request.getEmail();
+        String otp = request.getOtp();
 
-        Authentication authentication = authenticate(username, verificationCode.getOpt());
+        Authentication authentication = authenticate(email, otp);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String token = jwtProvider.generateToken(authentication);
@@ -126,14 +138,23 @@ public class AuthServiceImpl implements AuthService {
 
     private Authentication authenticate(String username, String otp) {
         UserDetails userDetails = customUserServiceImpl.loadUserByUsername(username);
+
+        String SELLER_PREFIX = "seller_";
+        if(username.startsWith(SELLER_PREFIX)) {
+            username = username.substring(SELLER_PREFIX.length());
+        }
+
+        String CUSTOMER_PREFIX = "customer_";
+        if(username.startsWith(CUSTOMER_PREFIX)) {
+            username = username.substring(CUSTOMER_PREFIX.length());
+        }
+
         if(userDetails == null){
             throw new BadCredentialsException("invalid username or password");
         }
         VerificationCode verificationCode = verificationCodeRepository.findByEmail(username);
-        String email = verificationCode.getEmail();
-        String opt = verificationCode.getOpt();
-        System.out.println(opt+""+email);
-        if(verificationCode.getOpt() == null || !verificationCode.getOpt().equals(otp)) {
+
+        if(verificationCode.getOtp() == null || !verificationCode.getOtp().equals(otp)) {
             throw new BadCredentialsException("wrong opt ...");
         }
         return new UsernamePasswordAuthenticationToken
