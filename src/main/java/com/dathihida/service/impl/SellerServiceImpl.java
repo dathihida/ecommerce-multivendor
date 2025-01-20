@@ -3,6 +3,7 @@ package com.dathihida.service.impl;
 import com.dathihida.config.JwtProvider;
 import com.dathihida.domain.AccountStatus;
 import com.dathihida.domain.USER_ROLE;
+import com.dathihida.exception.SellerException;
 import com.dathihida.model.Address;
 import com.dathihida.model.Seller;
 import com.dathihida.repository.AddressRepository;
@@ -50,9 +51,9 @@ public class SellerServiceImpl implements SellerService {
     }
 
     @Override
-    public Seller getSellerById(Long id) throws Exception {
+    public Seller getSellerById(Long id) throws SellerException {
         return sellerRepository.findById(id)
-                .orElseThrow(()-> new Exception("seller not found with id"+id));
+                .orElseThrow(()-> new SellerException("seller not found with id"+" "+id));
     }
 
     @Override

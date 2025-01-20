@@ -3,6 +3,7 @@ package com.dathihida.controller;
 import com.dathihida.config.JwtProvider;
 import com.dathihida.domain.AccountStatus;
 import com.dathihida.domain.USER_ROLE;
+import com.dathihida.exception.SellerException;
 import com.dathihida.model.Seller;
 import com.dathihida.model.SellerReport;
 import com.dathihida.model.VerificationCode;
@@ -78,7 +79,7 @@ public class SellerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Seller> getSellerById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<Seller> getSellerById(@PathVariable Long id) throws SellerException {
         Seller seller = sellerService.getSellerById(id);
         return new ResponseEntity<>(seller, HttpStatus.OK);
     }
