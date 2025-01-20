@@ -3,6 +3,7 @@ package com.dathihida.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.String;
@@ -43,6 +44,8 @@ public class Product {
     private Seller seller;
 
     private String sizes;
+
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
