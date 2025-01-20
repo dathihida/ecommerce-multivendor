@@ -1,7 +1,10 @@
 package com.dathihida.request;
 
+import lombok.Data;
+
 import java.util.List;
 
+@Data
 public class CreateProductRequest {
     private String title;
     private String description;
