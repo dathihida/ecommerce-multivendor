@@ -29,31 +29,9 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     @Override
     public Product createProduct(CreateProductRequest request, Seller seller) {
-        Category category1= categoryRepository.findByCategoryId(request.getCategory());
-        if (category1 == null){
-            Category category = new Category();
-            category.setCategoryId(request.getCategory());
-            category.setLevel(1);
-            category1 = categoryRepository.save(category);
-        }
-
-        Category category2 = categoryRepository.findByCategoryId(request.getCategory());
-        if (category2 == null){
-            Category category = new Category();
-            category.setCategoryId(request.getCategory2());
-            category.setLevel(2);
-            category.setParentCategory(category1);
-            category2 = categoryRepository.save(category);
-        }
-
-        Category category3 = categoryRepository.findByCategoryId(request.getCategory());
-        if (category3 == null){
-            Category category = new Category();
-            category.setCategoryId(request.getCategory3());
-            category.setLevel(3);
-            category.setParentCategory(category2);
-            category3 = categoryRepository.save(category);
-        }
+        Category category1 = getOrCreateCategory(request.getCategory(), 1, null);
+        Category category2 = getOrCreateCategory(request.getCategory2(), 2, category1);
+        Category category3 = getOrCreateCategory(request.getCategory3(), 3, category2);
 
         int discountPercentage = calculateDiscountPercentage(request.getMrpPrice(), request.getSellingPrice());
 
@@ -71,6 +49,18 @@ public class ProductServiceImpl implements ProductService {
         product.setDiscountPercent(discountPercentage);
 
         return productRepository.save(product);
+    }
+
+    private Category getOrCreateCategory(String categoryId, int level, Category parentCategory) {
+        Category category = categoryRepository.findByCategoryId(categoryId);
+        if (category == null) {
+            category = new Category();
+            category.setCategoryId(categoryId);
+            category.setLevel(level);
+            category.setParentCategory(parentCategory);
+            category = categoryRepository.save(category);
+        }
+        return category;
     }
 
     private int calculateDiscountPercentage(int mrpPrice, int sellingPrice) {
