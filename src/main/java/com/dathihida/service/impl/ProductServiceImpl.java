@@ -48,6 +48,7 @@ public class ProductServiceImpl implements ProductService {
         product.setSizes(request.getSizes());
         product.setDiscountPercent(discountPercentage);
 
+
         return productRepository.save(product);
     }
 
