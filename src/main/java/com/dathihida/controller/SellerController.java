@@ -15,6 +15,7 @@ import com.dathihida.response.ApiResponse;
 import com.dathihida.response.AuthResponse;
 import com.dathihida.service.AuthService;
 import com.dathihida.service.EmailService;
+import com.dathihida.service.SellerReportService;
 import com.dathihida.service.SellerService;
 import com.dathihida.utils.OtpUtil;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class SellerController {
     private final AuthService authService;
     private final EmailService emailService;
     private final JwtProvider jwtProvider;
+    private final SellerReportService sellerReportService;
 
 
     @PostMapping("/login")
@@ -91,14 +93,13 @@ public class SellerController {
         return new ResponseEntity<>(seller, HttpStatus.OK);
     }
 
-//    @GetMapping("/report")
-//    public ResponseEntity<SellerReport> getSellerReport
-//            (@RequestHeader("Authorization") String jwt) throws Exception {
-//        String email = jwtProvider.getEmailFromJwtToken(jwt);
-//        Seller seller = sellerService.getSellerByEmail(email);
-//        SellerReport sellerReport = .getSellerReport(seller);
-//        return new ResponseEntity<>(sellerReport, HttpStatus.OK);
-//    }
+    @GetMapping("/report")
+    public ResponseEntity<SellerReport> getSellerReport
+            (@RequestHeader("Authorization") String jwt) throws Exception {
+        Seller seller = sellerService.getSellerProfile(jwt);
+        SellerReport sellerReport = sellerReportService.getSellerReport(seller);
+        return new ResponseEntity<>(sellerReport, HttpStatus.OK);
+    }
 
     @GetMapping
     public ResponseEntity<List<Seller>> getAllSellers(
