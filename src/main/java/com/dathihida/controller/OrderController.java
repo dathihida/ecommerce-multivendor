@@ -2,8 +2,10 @@ package com.dathihida.controller;
 
 import com.dathihida.domain.PaymentMethod;
 import com.dathihida.model.*;
+import com.dathihida.repository.PaymentOrderRepository;
 import com.dathihida.response.PaymentLinkResponse;
 import com.dathihida.service.*;
+import com.razorpay.PaymentLink;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,8 @@ public class OrderController {
     private final CartService cartService;
     private final SellerService sellerService;
     private final SellerReportService sellerReportService;
+    private final PaymentService paymentService;
+    private final PaymentOrderRepository paymentOrderRepository;
 
     @PostMapping()
     public ResponseEntity<PaymentLinkResponse> createOrderHandler(
@@ -32,10 +36,26 @@ public class OrderController {
             ) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
         Cart cart = cartService.findUserCart(user);
-
         Set<Order> orders = orderService.createOrder(user, shippingAddress, cart);
 
+        PaymentOrder paymentOrder = paymentService.createOrder(user, orders);
+
         PaymentLinkResponse paymentLinkResponse = new PaymentLinkResponse();
+
+        if (paymentMethod.equals(PaymentMethod.RAZORPAY)){
+            PaymentLink paymentLink = paymentService.createRazorpayPaymentLink(user, paymentOrder.getAmount(), paymentOrder.getId());
+            String paymentUrl = paymentLink.get("short_url");
+            String paymentUrlId = paymentLink.get("id");
+
+            paymentLinkResponse.setPayment_link_url(paymentUrl);
+            paymentOrder.setPaymentLinkId(paymentUrlId);
+            paymentOrderRepository.save(paymentOrder);
+
+        }else{
+            String paymentUrl = paymentService.createStripePaymentLink(
+                    user, paymentOrder.getAmount(), paymentOrder.getId());
+            paymentLinkResponse.setPayment_link_url(paymentUrl);
+        }
 
         return new ResponseEntity<>(paymentLinkResponse, HttpStatus.OK);
     }
