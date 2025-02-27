@@ -95,7 +95,7 @@ public class SellerController {
 
     @GetMapping("/report")
     public ResponseEntity<SellerReport> getSellerReport
-            (@RequestHeader("Authorization") String jwt) throws Exception {
+            (@RequestHeader("Authorization") String jwt) throws Exception { 
         Seller seller = sellerService.getSellerProfile(jwt);
         SellerReport sellerReport = sellerReportService.getSellerReport(seller);
         return new ResponseEntity<>(sellerReport, HttpStatus.OK);

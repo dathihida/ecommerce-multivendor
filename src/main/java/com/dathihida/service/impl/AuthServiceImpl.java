@@ -63,8 +63,6 @@ public class AuthServiceImpl implements AuthService {
                     throw new Exception("seller not exist with provided email");
                 }
             }
-
-
         }
 
         VerificationCode isExist = verificationCodeRepository.findByEmail(email);
