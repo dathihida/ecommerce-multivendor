@@ -51,8 +51,18 @@ public class OrderController {
             paymentOrder.setPaymentLinkId(paymentUrlId);
             paymentOrderRepository.save(paymentOrder);
 
-        }else{
+        }else
+            if(paymentMethod.equals((PaymentMethod.STRIPE) )){
             String paymentUrl = paymentService.createStripePaymentLink(
+                    user, paymentOrder.getAmount(), paymentOrder.getId());
+            paymentLinkResponse.setPayment_link_url(paymentUrl);
+        }else
+            if(paymentMethod.equals((PaymentMethod.VNPAY) )){
+                // truyen vao 2 thu
+                // amount: 10000 * 100;
+                // language: "vn"
+
+            String paymentUrl = paymentService.createVNPaymentLink(
                     user, paymentOrder.getAmount(), paymentOrder.getId());
             paymentLinkResponse.setPayment_link_url(paymentUrl);
         }

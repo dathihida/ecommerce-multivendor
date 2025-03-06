@@ -18,4 +18,5 @@ public interface PaymentService {
                                 String paymentLinkId) throws RazorpayException;
     PaymentLink createRazorpayPaymentLink(User user, Long amount, Long orderId) throws RazorpayException;
     String createStripePaymentLink(User user, Long amount, Long orderId) throws StripeException;
+    String createVNPaymentLink(User user, Long amountPrice, Long orderId);
 }
