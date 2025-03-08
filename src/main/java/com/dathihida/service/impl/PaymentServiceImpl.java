@@ -75,8 +75,10 @@ public class PaymentServiceImpl implements PaymentService {
             String status = payment.get("status");
             if(status.equals("captured")){
                 Set<Order> orders = paymentOrder.getOrders();
+
                 for (Order order : orders) {
                     order.setPaymentStatus(PaymentStatus.COMPLETED);
+
                     orderRepository.save(order);
                 }
                 paymentOrder.setStatus(PaymentOrderStatus.SUCCESS);

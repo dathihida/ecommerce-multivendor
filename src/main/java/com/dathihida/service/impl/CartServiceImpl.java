@@ -29,8 +29,9 @@ public class CartServiceImpl implements CartService {
             cartItem.setSize(size);
 
             int totalPrice = quantity* product.getSellingPrice();
-            cartItem.setSellingPrice(totalPrice);
-            cartItem.setMrpPrice(quantity*product.getMrpPrice());
+
+            cartItem.setSellingPrice(quantity*product.getMrpPrice());
+            cartItem.setMrpPrice(totalPrice);
 
             cart.getCartItems().add(cartItem);
             cartItem.setCart(cart);
