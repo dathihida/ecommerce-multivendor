@@ -30,8 +30,8 @@ public class CartServiceImpl implements CartService {
 
             int totalPrice = quantity* product.getSellingPrice();
 
-            cartItem.setSellingPrice(quantity*product.getMrpPrice());
-            cartItem.setMrpPrice(totalPrice);
+            cartItem.setSellingPrice(quantity * product.getSellingPrice()); // Giá giảm
+            cartItem.setMrpPrice(quantity * product.getMrpPrice()); // Giá gốc
 
             cart.getCartItems().add(cartItem);
             cartItem.setCart(cart);
@@ -49,25 +49,22 @@ public class CartServiceImpl implements CartService {
         int totalItem = 0;
 
         for (CartItem cartItem : cart.getCartItems()) {
-            totalItem += cartItem.getMrpPrice();
+            totalPrice += cartItem.getMrpPrice();
             totalDiscountedPrice += cartItem.getSellingPrice();
             totalItem += cartItem.getQuantity();
         }
+
         cart.setTotalMrpPrice(totalPrice);
         cart.setTotalItem(totalItem);
         cart.setTotalSellingPrice(totalDiscountedPrice);
         cart.setDiscount(calculateDiscountPercentage(totalPrice, totalDiscountedPrice));
-        cart.setTotalItem(totalItem);
         return cart;
     }
 
     private int calculateDiscountPercentage(int mrpPrice, int sellingPrice) {
-        if(mrpPrice <= 0){
-//            throw new IllegalArgumentException("MrpPrice cannot be negative");
+        if (mrpPrice <= 0 || sellingPrice >= mrpPrice) {
             return 0;
         }
-        double discount = mrpPrice - sellingPrice;
-        double discountPercentage = (discount / mrpPrice) * 100;
-        return (int) discountPercentage;
+        return (int) (((double) (mrpPrice - sellingPrice) / mrpPrice) * 100);
     }
 }
