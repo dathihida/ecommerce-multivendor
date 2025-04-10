@@ -25,6 +25,10 @@ public class AdminCouponController {
                                             @RequestParam String code,
                                             @RequestParam double orderValue,
                                             @RequestHeader("Authorization") String jwt) throws Exception {
+        System.out.println("Apply: " + apply);
+        System.out.println("Code: " + code);
+        System.out.println("OrderValue: " + orderValue);
+        System.out.println("JWT: " + jwt);
         User user = userService.findUserByJwtToken(jwt);
         Cart cart;
 

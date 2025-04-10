@@ -23,31 +23,44 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public Cart applyCoupon(String code, double orderValue, User user) throws Exception {
         Coupon coupon = couponRepository.findByName(code);
-        Cart cart = cartRepository.findByUserId(user.getId());
-
         if (coupon == null) {
-            throw new Exception("coupon not valid");
-        }
-        if (user.getUsedCoupons().contains(coupon)){
-            throw new Exception("coupon already used");
+            throw new IllegalArgumentException("Coupon not found: " + code);
         }
 
-        if (orderValue < coupon.getMinimumOrderValue()){
-            throw new Exception("coupon less than minimum order value" + coupon.getMinimumOrderValue());
+        Cart cart = cartRepository.findByUserId(user.getId());
+        if (cart == null) {
+            throw new IllegalStateException("Cart not found for user");
         }
-        if(coupon.isActive()
+
+        if (user.getUsedCoupons().contains(coupon)) {
+            throw new IllegalStateException("Coupon already used by user");
+        }
+
+        if (orderValue < coupon.getMinimumOrderValue()) {
+            throw new IllegalArgumentException("Order value must be at least: " + coupon.getMinimumOrderValue());
+        }
+
+        if (coupon.isActive()
+                && coupon.getValidityStartDate() != null
+                && coupon.getValidityEndDate() != null
                 && LocalDate.now().isAfter(coupon.getValidityStartDate())
-                && LocalDate.now().isBefore(coupon.getValidityEndDate())){
+                && LocalDate.now().isBefore(coupon.getValidityEndDate())) {
+
             user.getUsedCoupons().add(coupon);
             userRepository.save(user);
 
-            double discountedPrice = cart.getTotalSellingPrice()*coupon.getDiscountPercentage()/100;
-            cart.setTotalSellingPrice(cart.getTotalSellingPrice()-discountedPrice);
+            double discount = cart.getTotalSellingPrice() * (coupon.getDiscountPercentage() / 100); // tinh tien giam khi apply coupon
+            cart.setTotalSellingPrice(cart.getTotalSellingPrice() - discount); // tinh tien can tra cua gio hang
+            cart.setDiscount((int) coupon.getDiscountPercentage()); //
+            cart.setCouponCode(code);
             cartRepository.save(cart);
+
             return cart;
         }
-        throw new Exception("coupon coupon valid");
+
+        throw new IllegalStateException("Coupon is not valid or expired");
     }
+
 
     @Override
     public Cart removeCoupon(String code, User user) throws Exception {

@@ -21,7 +21,7 @@ public interface ProductService {
             String sizes,
             Integer minPrice,
             Integer maxPrice,
-            Integer minDiscount,
+            Integer discountPercent,
             String sort,
             String stock,
             Integer pageNumber

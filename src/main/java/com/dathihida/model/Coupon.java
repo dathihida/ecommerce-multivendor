@@ -1,5 +1,6 @@
 package com.dathihida.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,5 +32,6 @@ public class Coupon {
     private boolean isActive = true;
 
     @ManyToMany(mappedBy = "usedCoupons")
+    @JsonIgnore
     private Set<User> usedByUsers = new HashSet<>();
 }

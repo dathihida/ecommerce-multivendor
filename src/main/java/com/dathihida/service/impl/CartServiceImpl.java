@@ -20,26 +20,32 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartItem addCartItem(User user, Product product, String size, int quantity) {
         Cart cart = findUserCart(user);
-        CartItem isPresent = cartItemRepository.findByCartAndProductAndSize(cart, product, size);
-        if (isPresent == null) {
+        CartItem existingItem = cartItemRepository.findByCartAndProductAndSize(cart, product, size);
+
+        if (existingItem == null) {
+            // Nếu chưa có, tạo mới
             CartItem cartItem = new CartItem();
             cartItem.setProduct(product);
             cartItem.setQuantity(quantity);
             cartItem.setUserId(user.getId());
             cartItem.setSize(size);
-
-            int totalPrice = quantity* product.getSellingPrice();
-
-            cartItem.setSellingPrice(quantity * product.getSellingPrice()); // Giá giảm
-            cartItem.setMrpPrice(quantity * product.getMrpPrice()); // Giá gốc
-
-            cart.getCartItems().add(cartItem);
+            cartItem.setSellingPrice(quantity * product.getSellingPrice());
+            cartItem.setMrpPrice(quantity * product.getMrpPrice());
             cartItem.setCart(cart);
 
+            cart.getCartItems().add(cartItem);
             return cartItemRepository.save(cartItem);
+        } else {
+            // ✅ Nếu đã có, cộng dồn số lượng và cập nhật giá
+            int newQuantity = existingItem.getQuantity() + quantity;
+            existingItem.setQuantity(newQuantity);
+            existingItem.setSellingPrice(newQuantity * product.getSellingPrice());
+            existingItem.setMrpPrice(newQuantity * product.getMrpPrice());
+
+            return cartItemRepository.save(existingItem);
         }
-        return isPresent;
     }
+
 
     @Override
     public Cart findUserCart(User user) {
@@ -49,15 +55,15 @@ public class CartServiceImpl implements CartService {
         int totalItem = 0;
 
         for (CartItem cartItem : cart.getCartItems()) {
-            totalPrice += cartItem.getMrpPrice();
-            totalDiscountedPrice += cartItem.getSellingPrice();
-            totalItem += cartItem.getQuantity();
+            totalPrice += cartItem.getMrpPrice(); // tong tien gia goc
+            totalDiscountedPrice += cartItem.getSellingPrice();// tong tien gia khi selling
+            totalItem += cartItem.getQuantity(); // tong so luong san pham trong cartItem
         }
 
-        cart.setTotalMrpPrice(totalPrice);
-        cart.setTotalItem(totalItem);
-        cart.setTotalSellingPrice(totalDiscountedPrice);
-        cart.setDiscount(calculateDiscountPercentage(totalPrice, totalDiscountedPrice));
+        cart.setTotalMrpPrice(totalPrice); // gia goc
+        cart.setTotalItem(totalItem); // tong so luong san pham
+        cart.setTotalSellingPrice(totalDiscountedPrice); // tong tien khi selling
+//        cart.setDiscount(calculateDiscountPercentage(totalPrice, totalDiscountedPrice));
         return cart;
     }
 

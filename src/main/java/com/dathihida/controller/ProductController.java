@@ -37,7 +37,7 @@ public class ProductController {
                                                         @RequestParam(required = false) String size,
                                                         @RequestParam(required = false) Integer minPrice,
                                                         @RequestParam(required = false) Integer maxPrice,
-                                                        @RequestParam(required = false) Integer minDiscount,
+                                                        @RequestParam(required = false) Integer discountPercent,
                                                         @RequestParam(required = false) String sort,
                                                         @RequestParam(required = false) String stock,
                                                         @RequestParam(defaultValue = "0") Integer pageNumber
@@ -46,7 +46,7 @@ public class ProductController {
                 productService.getAllProducts(
                         category, brand, color,
                         size, minPrice, maxPrice,
-                        minDiscount, sort, stock, pageNumber), HttpStatus.OK);
+                        discountPercent, sort, stock, pageNumber), HttpStatus.OK);
 
     }
 }

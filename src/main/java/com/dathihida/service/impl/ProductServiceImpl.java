@@ -98,7 +98,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<Product> getAllProducts(String category, String brand, String colors, String sizes, Integer minPrice, Integer maxPrice, Integer minDiscount, String sort, String stock, Integer pageNumber) {
+    public Page<Product> getAllProducts(String category, String brand, String colors, String sizes, Integer minPrice,
+                                        Integer maxPrice, Integer discountPercent, String sort, String stock, Integer pageNumber) {
         Specification<Product> spec = (root, query, criteriaBuilder)->{
             List<Predicate> predicates = new ArrayList<>();
 
@@ -113,7 +114,7 @@ public class ProductServiceImpl implements ProductService {
             }
 
             if(sizes != null && !sizes.isEmpty()){
-                predicates.add(criteriaBuilder.equal(root.get("size"), sizes));
+                predicates.add(criteriaBuilder.equal(root.get("sizes"), sizes));
             }
 
             if(minPrice != null){
@@ -124,8 +125,8 @@ public class ProductServiceImpl implements ProductService {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("sellingPrice"), maxPrice));
             }
 
-            if(minDiscount != null){
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("discount"), minDiscount));
+            if(discountPercent != null){
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("discountPercent"), discountPercent));
             }
             if(stock != null){
                 predicates.add(criteriaBuilder.equal(root.get("stock"), stock));
