@@ -36,6 +36,7 @@ public class OrderController {
             ) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
         Cart cart = cartService.findUserCart(user);
+
         Set<Order> orders = orderService.createOrder(user, shippingAddress, cart);
 
         PaymentOrder paymentOrder = paymentService.createOrder(user, orders);
@@ -61,13 +62,13 @@ public class OrderController {
                 // truyen vao 2 thu
                 // amount: 10000 * 100;
                 // language: "vn"
+                String paymentUrl = paymentService.createVNPaymentLink(
+                        user, paymentOrder.getAmount(), paymentOrder.getId());
+                paymentLinkResponse.setPayment_link_url(paymentUrl);
+            }
 
-            String paymentUrl = paymentService.createVNPaymentLink(
-                    user, paymentOrder.getAmount(), paymentOrder.getId());
-            paymentLinkResponse.setPayment_link_url(paymentUrl);
-        }
-
-        return new ResponseEntity<>(paymentLinkResponse, HttpStatus.OK);
+        return new ResponseEntity<>(paymentLinkResponse, HttpStatus.OK
+);
     }
 
     @GetMapping("/user")

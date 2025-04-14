@@ -24,7 +24,7 @@ public class VNPayConfig {
 
     public static String payUrl= "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
-    public static String returnUrl = "${VNPAY_RETURN_URI:http://localhost:3000/payment-success/1}";
+    public static String returnUrl = "http://localhost:3000/payment-success/1";
 
     public static String md5(String message) {
         String digest = null;

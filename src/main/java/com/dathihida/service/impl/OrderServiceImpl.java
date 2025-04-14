@@ -3,10 +3,9 @@ package com.dathihida.service.impl;
 import com.dathihida.domain.OrderStatus;
 import com.dathihida.domain.PaymentStatus;
 import com.dathihida.model.*;
-import com.dathihida.repository.AddressRepository;
-import com.dathihida.repository.OrderItemRepository;
-import com.dathihida.repository.OrderRepository;
+import com.dathihida.repository.*;
 import com.dathihida.service.OrderService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
@@ -21,14 +20,22 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final AddressRepository addressRepository;
     private final OrderItemRepository orderItemRepository;
+    private final CartItemRepository cartItemRepository;
+    private final CartRepository cartRepository;
 
     @Override
+    @Transactional
     public Set<Order> createOrder(User user, Address shippingAddress, Cart cart) {
 
-        if(!user.getAddersses().contains(shippingAddress)) {
-            user.getAddersses().add(shippingAddress);
+        Optional<Address> existingAddress = addressRepository
+                .findAddressByNameAndLocalityAndAddressAndCityAndZipAndPinCodeAndMobileAndAccountStatus
+                        (shippingAddress.getName(), shippingAddress.getLocality(), shippingAddress.getAddress(),
+                         shippingAddress.getCity(), shippingAddress.getZip(), shippingAddress.getPinCode(),
+                         shippingAddress.getMobile(), shippingAddress.getAccountStatus());
+        Address addressToUser = existingAddress.orElseGet(()-> addressRepository.save(shippingAddress));
+        if(!user.getAddersses().contains(addressToUser)) {
+            user.getAddersses().add(addressToUser);
         }
-        Address address = addressRepository.save(shippingAddress);
 
         //sp1 => 4 shirt
         //sp2 => 1 pants
@@ -44,15 +51,16 @@ public class OrderServiceImpl implements OrderService {
             Long sellerId = entry.getKey();
             List<CartItem> cartItemList = entry.getValue();
 
-            int totalOrderPrice = cartItemList.stream().mapToInt(CartItem::getSellingPrice).sum();
+            int totalOrderPrice = cartItemList.stream().mapToInt(CartItem::getMrpPrice).sum();
+            int totalOrderPriceSelling = cartItemList.stream().mapToInt(CartItem::getSellingPrice).sum();
             int totalItem = cartItemList.stream().mapToInt(CartItem::getQuantity).sum();
 
             Order createdOrder = new Order();
             createdOrder.setUser(user);
             createdOrder.setSellerId(sellerId);
             createdOrder.setTotalMrpPrice(totalOrderPrice);
-            createdOrder.setTotalSellingPrice(totalItem);
-            createdOrder.setShippingAddress(address);
+            createdOrder.setTotalSellingPrice(totalOrderPriceSelling);
+            createdOrder.setShippingAddress(addressToUser);
             createdOrder.setOrderStatus(OrderStatus.PENDING);
             createdOrder.getPaymentDetails().setStatus(PaymentStatus.PENDING);
 
@@ -76,6 +84,17 @@ public class OrderServiceImpl implements OrderService {
                 orderItems.add(savedOrderItem);
             }
         }
+
+        // xoa cartItem
+        cartItemRepository.deleteAll(cart.getCartItems());
+        cart.getCartItems().clear();
+        // xet lai gia tri trong cart
+        cart.setCouponCode(null);
+        cart.setDiscount(0);
+        cart.setTotalItem(0);
+        cart.setTotalMrpPrice(0);
+        cart.setTotalSellingPrice(0);
+        cartRepository.save(cart);
         return orders;
     }
 

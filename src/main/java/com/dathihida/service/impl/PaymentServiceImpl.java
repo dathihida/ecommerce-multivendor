@@ -218,6 +218,7 @@ public class PaymentServiceImpl implements PaymentService {
         String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.secretKet, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = VNPayConfig.payUrl + "?" + queryUrl;
+        System.out.println("paymentUrl"+paymentUrl);
         return paymentUrl;
     }
 }
